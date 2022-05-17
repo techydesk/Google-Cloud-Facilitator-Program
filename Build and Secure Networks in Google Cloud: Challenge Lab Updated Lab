@@ -1,3 +1,9 @@
+#Build and Secure Networks in Google Cloud: Challenge Lab Updated Lab
+100 % Correct Solution and Updated Labs
+
+
+Track 1 : Quest 3 | Build and Secure Networks in Google Cloud: Challenge Lab 
+
 #Task 1: Check the firewall rules. Remove the overly permissive rules.
 
 gcloud compute firewall-rules delete open-access
