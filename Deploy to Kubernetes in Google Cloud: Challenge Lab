@@ -3,111 +3,70 @@ Deploy to Kubernetes in Google Cloud: Challenge Lab
 #Track 1 : Skill Badge 4: Deploy to Kubernetes in Google Cloud: Challenge Lab
 
 
-Task - 1 : Create a Docker image and store the Dockerfile
+#TASK 1 : Create a Docker image and store the Dockerfile
 
-gcloud auth list
-gsutil cat gs://cloud-training/gsp318/marking/setup_marking_v2.sh | bash
-gcloud source repos clone valkyrie-app
+source <(gsutil cat gs://cloud-training/gsp318/marking/setup_marking_v2.sh)
+gcloud source repos clone valkyrie-app --project=qwiklabs-gcp-01-096d3d9fe9fc [Your Project Id]
 cd valkyrie-app
 cat > Dockerfile <<EOF
-FROM golang:1.10
-WORKDIR /go/src/app
-COPY source .
-RUN go install -v
-ENTRYPOINT ["app","-single=true","-port=8080"]
-EOF
-docker build -t <Docker Image>:<Tag Name> .
+docker build -t valkyrie-dev:v0.0.3 . [AS PER YOUR NAME AND NUMBER]
 cd ..
-cd marking
 ./step1_v2.sh
 
----------------------------------------------------------------------------------------------------
-Task - 2 : Test the created Docker image
 
-cd ..
-cd valkyrie-app
-docker run -p 8080:8080 <Docker Image>:<Tag Name> &
-cd ..
-cd marking
+
+#TASK 2 : Test the created Docker image
+
+docker run -p 8080:8080 valkyrie-dev:v0.0.3 & [change name and number as per your lab names]
 ./step2_v2.sh
 
----------------------------------------------------------------------------------------------------
-Task - 3 : Push the Docker image in the Google Container Repository
 
-cd ..
-cd valkyrie-app
-docker tag <Docker Image>:<Tag Name> gcr.io/$GOOGLE_CLOUD_PROJECT/<Docker Image>:<Tag Name>
-docker push gcr.io/$GOOGLE_CLOUD_PROJECT/<Docker Image>:<Tag Name>
 
-----------------------------------------------------------------------------------------------------
+#TASK 3 : Push the Docker image in the Container Repository
 
-Task - 4 : Create and expose a deployment in Kubernetes
+docker tag valkyrie-dev:v0.0.3 gcr.io/qwiklabs-gcp-01-096d3d9fe9fc/valkyrie-dev:v0.0.3   [change name and number as per your lab names]
+docker push gcr.io/qwiklabs-gcp-01-096d3d9fe9fc/valkyrie-dev:v0.0.3         [change name and number as per your lab names]
 
-sed -i s#IMAGE_HERE#gcr.io/$GOOGLE_CLOUD_PROJECT/<Docker Image>:<Tag Name>#g k8s/deployment.yaml
+
+
+#TASK 4: Create and expose a deployment in Kubernetes
+
 gcloud container clusters get-credentials valkyrie-dev --zone us-east1-d
+cd valkyrie-app
+sed -i s#IMAGE_HERE#gcr.io/qwiklabs-gcp-01-096d3d9fe9fc/valkyrie-dev:v0.0.3#g k8s/deployment.yaml [Change your project id]
 kubectl create -f k8s/deployment.yaml
 kubectl create -f k8s/service.yaml
 
--------------------------------------------------------------------------------------------------------
-Task - 5 : Update the deployment with a new version of valkyrie-app
+
+#TASK 5 : Update the deployment with a new version of valkyrie-app
+
 
 git merge origin/kurt-dev
 kubectl edit deployment valkyrie-dev
-### change replicas from 1 to <Replicas Count>
-### change <Tag Name> to <Updated Version> in two places
-docker build -t gcr.io/$GOOGLE_CLOUD_PROJECT/<Docker Image>:<Updated Version> .
-docker push gcr.io/$GOOGLE_CLOUD_PROJECT/<Docker Image>:<Updated Version>
 
--------------------------------------------------------------------------------------------------------
+docker build -t gcr.io/$GOOGLE_CLOUD_PROJECT/valkyrie-dev:v0.0.4 .             [change name and number as per your lab names]
+docker push gcr.io/$GOOGLE_CLOUD_PROJECT/valkyrie-dev:v0.0.4            [change name and number as per your lab names]
+kubectl edit deployment valkyrie-dev
 
-Task - 6 : Create a pipeline in Jenkins to deploy your app
+
+
+#TASK 6 : Create a pipeline in Jenkins to deploy your app
 
 docker ps
-docker kill <take container_id from above command>
+docker kill container_id
 
 export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/component=jenkins-master" -l "app.kubernetes.io/instance=cd" -o jsonpath="{.items[0].metadata.name}")
 kubectl port-forward $POD_NAME 8080:8080 >> /dev/null &
 printf $(kubectl get secret cd-jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode);echo
 
------------------------------------------------------------------------------------------------------------
-
-Open Jenkins Web View -> Preview on port 8080
-
-   Username : admin
-   Password : {Code output from previous command} 
-
-____________________________________________________________________________________________________________
-
-Go through the following:
-
--> Manage Jenkins -> Manage Credentials -> Jenkins -> Global credentials (unrestricted) -> Add credentials -> Kind: Google Service Account from metadata -> OK
-
--> Jenkins -> New Item -> Name : valkyrie-app -> Pipeline -> Pipeline script from SCM -> Set SCM to git -> OK
-
--> Pipeline -> Script: Pipeline script from SCM -> SCM: Git
-
--> Repository URL: {find it using command: gcloud source repos list} -> Credentials: {Project id}
-
--> Apply -> Save
-
-
-_____________________________________________________________________________________________________________
+gcloud source repos list
 
 sed -i "s/green/orange/g" source/html.go
-
 sed -i "s/YOUR_PROJECT/$GOOGLE_CLOUD_PROJECT/g" Jenkinsfile
-git config --global user.email "you@example.com"              // Email
-git config --global user.name "student..."                       // Username
+git config --global user.email "you@example.com"    
+git config --global user.name "student"               
 git add .
 git commit -m "built pipeline init"
 git push
 
-
-In Jenkins click Build and wait to get score.
-
-
 ***************************************Congratulations*************************************************************************
-
-
-
-
