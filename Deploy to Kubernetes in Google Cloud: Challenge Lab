@@ -32,7 +32,7 @@ docker push gcr.io/qwiklabs-gcp-00-e572d84a2f7d/valkyrie-app:v0.0.3         [cha
 #TASK 4: Create and expose a deployment in Kubernetes
 
 gcloud container clusters get-credentials valkyrie-dev --zone us-east1-d
-cd valkyrie-dev
+cd valkyrie-app
 sed -i s#IMAGE_HERE#gcr.io/qwiklabs-gcp-00-e572d84a2f7d/valkyrie-app:v0.0.3#g k8s/deployment.yaml [Change your project id]
 kubectl create -f k8s/deployment.yaml
 kubectl create -f k8s/service.yaml
@@ -63,8 +63,8 @@ gcloud source repos list
 
 sed -i "s/green/orange/g" source/html.go
 sed -i "s/YOUR_PROJECT/$GOOGLE_CLOUD_PROJECT/g" Jenkinsfile
-git config --global user.email "you@example.com"    
-git config --global user.name "student"               
+git config --global user.email "you@example.com"    {Enter your gloud email address}
+git config --global user.name "student"               {Enter your google cloud username}
 git add .
 git commit -m "built pipeline init"
 git push
