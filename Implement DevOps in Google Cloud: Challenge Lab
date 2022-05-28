@@ -1,7 +1,7 @@
 Implement DevOps in Google Cloud: Challenge Lab
 Skill Badge 6 : Implement DevOps in Google Cloud
 Correct Solution | Update Lab
-
+------------------------------------------------------------------------------------------------------------
 #1st Track
 
 gcloud auth list
@@ -16,15 +16,20 @@ gcloud container clusters get-credentials jenkins-cd
 
 kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
 
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/  → this might not work… use the next line of code instead…
+
 helm repo add stable https://charts.helm.sh/stable
 
 helm repo update
 
 helm install cd stable/jenkins
 
+kubectl get pods
+
 export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/component=jenkins-master" -l "app.kubernetes.io/instance=cd" -o jsonpath="{.items[0].metadata.name}")
 kubectl port-forward $POD_NAME 8080:8080 >> /dev/null &
 printf $(kubectl get secret cd-jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode);echo
+
 
 cd sample-app
 kubectl create ns production
@@ -34,6 +39,7 @@ kubectl apply -f k8s/services -n production
 
 kubectl get svc
 kubectl get service gceme-frontend -n production
+
 
 After these commands do the jenkins part then do the rest commands -
 
@@ -46,8 +52,8 @@ git add .
 git commit -m "initial commit"
 git push origin master
 
-
-2nd Task -----
+------------------------------------------------------------------------------------------------------------------------
+# 2nd Task
 
 git checkout -b new-feature
 
@@ -57,7 +63,8 @@ git add Jenkinsfile html.go main.go
 git commit -m "Version 2.0.0"
 git push origin new-feature
 
-3rd Task ----------
+-----------------------------------------------------------------------------------------------------------------------------
+#3rd Task
 
 curl http://localhost:8001/api/v1/namespaces/new-feature/services/gceme-frontend:80/proxy/version
 kubectl get service gceme-frontend -n production  
@@ -68,7 +75,8 @@ jsonpath="{.status.loadBalancer.ingress[0].ip}" --namespace=production services 
 git checkout master
 git push origin master
 
-4rth Task -------
+---------------------------------------------------------------------------------------------------------------------------
+#4th Task
 
 export FRONTEND_SERVICE_IP=$(kubectl get -o \
 jsonpath="{.status.loadBalancer.ingress[0].ip}" --namespace=production services gceme-frontend)
