@@ -4,6 +4,10 @@ Correct Solution | Update Lab
 
 #1st Track
 
+gcloud auth list
+
+gcloud config list project
+
 gcloud config set compute/zone us-east1-b
 
 git clone https://source.developers.google.com/p/$DEVSHELL_PROJECT_ID/r/sample-app
