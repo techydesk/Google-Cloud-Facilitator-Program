@@ -60,7 +60,7 @@ git checkout -b new-feature
 After this command make the required changes!
 
 git add Jenkinsfile html.go main.go
-git commit -m "Version 2.0.0"
+git commit -m "Version 2.0.1"     ******Change Your Version here******
 git push origin new-feature
 
 -----------------------------------------------------------------------------------------------------------------------------
