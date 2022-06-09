@@ -1,13 +1,20 @@
 #Build a Website on Google Cloud: Challenge Lab
-#100 % Correct Solution
 
+100% Correct Solution 
+---------------------------------------------------------------------------------------------------------------------
 
+export MONOLITH_IDENTIFIER=
+export CLUSTER_NAME=
+export ORDERS_IDENTIFIER=
+export PRODUCTS_IDENTIFIER=
+export FRONTEND_IDENTIFIER=
 
+gcloud services enable cloudbuild.googleapis.com
+gcloud services enable container.googleapis.com
 
+---------------------------------------------------------------------------------------------------------------------------
 
-#Task 1: Download the monolith code and build your container
-
-
+# Task 1 :
 
 git clone https://github.com/googlecodelabs/monolith-to-microservices.git
 
@@ -15,74 +22,76 @@ cd ~/monolith-to-microservices
 ./setup.sh
 
 cd ~/monolith-to-microservices/monolith
-npm start
-
-gcloud services enable cloudbuild.googleapis.com
-gcloud builds submit --tag gcr.io/${GOOGLE_CLOUD_PROJECT}/fancytest:1.0.0 .
-
---------------------------------------------------------------------------------------------------------
-
-#Task 2: Create a kubernetes cluster and deploy the application
+gcloud builds submit --tag gcr.io/${GOOGLE_CLOUD_PROJECT}/${MONOLITH_IDENTIFIER}:1.0.0 .
 
 
+------------------------------------------------------------------------------------------------------------------------
+
+# Task 2
 
 gcloud config set compute/zone us-central1-a
-gcloud services enable container.googleapis.com
-gcloud container clusters create fancy-cluster --num-nodes 3
 
-kubectl create deployment fancytest --image=gcr.io/${GOOGLE_CLOUD_PROJECT}/fancytest:1.0.0
-kubectl expose deployment fancytest --type=LoadBalancer --port 80 --target-port 8080
+gcloud container clusters create $CLUSTER_NAME --num-nodes 3
+
+gcloud container clusters get-credentials $CLUSTER_NAME
+
+kubectl create deployment $MONOLITH_IDENTIFIER --image=gcr.io/${GOOGLE_CLOUD_PROJECT}/${MONOLITH_IDENTIFIER}:1.0.0
+kubectl expose deployment $MONOLITH_IDENTIFIER --type=LoadBalancer --port 80 --target-port 8080
+
+kubectl get svc -w
 
 
----------------------------------------------------------------------------------------------------------
-
-#Task 3: Create a containerized version of your Microservices
-
+------------------------------------------------------------------------------------------------------------------------------
+# Task 3: 
 
 
 cd ~/monolith-to-microservices/microservices/src/orders
-gcloud builds submit --tag gcr.io/${GOOGLE_CLOUD_PROJECT}/orders:1.0.0 .
+gcloud builds submit --tag gcr.io/${GOOGLE_CLOUD_PROJECT}/${ORDERS_IDENTIFIER}:1.0.0 .
 
 cd ~/monolith-to-microservices/microservices/src/products
-gcloud builds submit --tag gcr.io/${GOOGLE_CLOUD_PROJECT}/products:1.0.0 .
+gcloud builds submit --tag gcr.io/${GOOGLE_CLOUD_PROJECT}/${PRODUCTS_IDENTIFIER}:1.0.0 .
 
+-------------------------------------------------------------------------------------------------------------------------------------
 
------------------------------------------------------------------------------------------------------------
+# Task 4 :
 
+kubectl create deployment $ORDERS_IDENTIFIER --image=gcr.io/${GOOGLE_CLOUD_PROJECT}/${ORDERS_IDENTIFIER}:1.0.0
+kubectl expose deployment $ORDERS_IDENTIFIER --type=LoadBalancer --port 80 --target-port 8081
 
-# Task 4: Deploy the new microservices
+kubectl get svc -w
 
+kubectl create deployment $PRODUCTS_IDENTIFIER --image=gcr.io/${GOOGLE_CLOUD_PROJECT}/${PRODUCTS_IDENTIFIER}:1.0.0
+kubectl expose deployment $PRODUCTS_IDENTIFIER --type=LoadBalancer --port 80 --target-port 8082
 
-kubectl create deployment orders --image=gcr.io/${GOOGLE_CLOUD_PROJECT}/orders:1.0.0
-kubectl expose deployment orders --type=LoadBalancer --port 80 --target-port 8081
+kubectl get svc -w
 
-kubectl create deployment products --image=gcr.io/${GOOGLE_CLOUD_PROJECT}/products:1.0.0
-kubectl expose deployment products --type=LoadBalancer --port 80 --target-port 8082
+--------------------------------------------------------------------------------------------------------------------------------------------
 
--------------------------------------------------------------------------------------------------------------
+# Task 5 :
 
-# Task 5: Configure the Frontend microservice
-
+export ORDERS_SERVICE_IP=$(kubectl get services -o jsonpath="{.items[1].status.loadBalancer.ingress[0].ip}")
+export PRODUCTS_SERVICE_IP=$(kubectl get services -o jsonpath="{.items[2].status.loadBalancer.ingress[0].ip}")
 
 cd ~/monolith-to-microservices/react-app
-nano .env
+sed -i "s/localhost:8081/$ORDERS_SERVICE_IP/g" .env
+sed -i "s/localhost:8082/$PRODUCTS_SERVICE_IP/g" .env
+npm run build
 
--------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Task 6: Create a containerized version of the Frontend microservice
-
+# Task 6 :
 
 cd ~/monolith-to-microservices/microservices/src/frontend
-gcloud builds submit --tag gcr.io/${GOOGLE_CLOUD_PROJECT}/frontend:1.0.0 .
+gcloud builds submit --tag gcr.io/${GOOGLE_CLOUD_PROJECT}/${FRONTEND_IDENTIFIER}:1.0.0 .
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Task 7 :
+
+kubectl create deployment $FRONTEND_IDENTIFIER --image=gcr.io/${GOOGLE_CLOUD_PROJECT}/${FRONTEND_IDENTIFIER}:1.0.0
+kubectl expose deployment $FRONTEND_IDENTIFIER --type=LoadBalancer --port 80 --target-port 8080
+
+kubectl get svc -w
 
 
--------------------------------------------------------------------------------------------------------------
-
-# Task 7: Deploy the Frontend microservice
-
-kubectl create deployment frontend --image=gcr.io/${GOOGLE_CLOUD_PROJECT}/frontend:1.0.0
-
-kubectl expose deployment frontend --type=LoadBalancer --port 80 --target-port 8080
-
-
-******************************************** Congratulations **********************************************************
+************************** Congratulations **************************************************************
