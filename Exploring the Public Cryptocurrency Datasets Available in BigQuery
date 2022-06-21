@@ -32,3 +32,6 @@ SELECT
 sum(value) as balance
 FROM double_entry_book
 where address = "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4"
+
+
+***************************************************  Congratulations ***********************************************************************
