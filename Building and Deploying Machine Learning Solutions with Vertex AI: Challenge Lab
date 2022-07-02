@@ -1,0 +1,123 @@
+Building and Deploying Machine Learning Solutions with Vertex AI: Challenge Lab
+100 % Correct Solution
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+Task 1 : Create an Vertex Notebooks Instance
+
+Step 1 : Navigate to Vertex AI > Workbench > User-Managed Notebooks
+
+Step 2 : Create a Notebook instance --> Select TensorFlow Enterprise 2.6 -->  Without GPUs
+         Name your notebook [ vertex-ai-challenge ] and leave the default configurations
+         
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Task 2 : Download the Challenge Notebook
+
+When The Vertex AI Notebook Will be created ---> Click on The Open Jupyter --> Go to Terminal --> Clone The Following Repository
+
+git clone https://github.com/GoogleCloudPlatform/training-data-analyst
+
+
+cd training-data-analyst/quests/vertex-ai/vertex-challenge-lab
+pip install -U -r requirements.txt
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Task 3 : Import Dataset
+
+Go to the enclosing folder: training-data-analyst/quests/vertex-ai/vertex-challenge-lab
+
+Open the notebook file vertex-challenge-lab.ipynb.
+
+In the Setup section, define your PROJECT_ID, GCS_BUCKET, and USER variables.
+
+
+
+PROJECT_ID = "<PROJECT_ID>"
+
+
+GCS_BUCKET = f"gs://<PROJECT_ID>-vertex-challenge-lab"
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Task 4 : Build and Train Model
+
+
+1. Fill out the #TODO section to add a hub.KerasLayer for BERT text preprocessing.
+
+
+preprocessor = hub.KerasLayer(hparams['tfhub-bert-preprocessor'],name='preprocessing')
+
+
+2. Fill out the #TODO section to add a hub.KerasLayer for BERT text encoding.
+
+encoder = hub.KerasLayer(hparams['tfhub-bert-encoder'], trainable=True, name='BERT_encoder')
+
+
+
+3. Fill out the #TODO section to save your BERT sentiment classifier locally. You should save it to the ./bert-sentiment-classifier-local directory.
+
+"model-dir": "./bert-sentiment-classifier-local"
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Task 5 : Create artifact registry for custom container images
+
+1. Fill out the #TODO section to create a Docker Artifact Registry using the gcloud CLI.
+
+
+!gcloud artifacts repositories create {ARTIFACT_REGISTRY} \
+--repository-format=docker \
+--location={REGION} \
+--description="Artifact registry for ML custom training images for sentiment classification"
+
+
+2. Build and submit your container image to Artifact Registry using Cloud Build
+
+
+!gcloud builds submit {MODEL_DIR} --timeout=20m --config {MODEL_DIR}/cloudbuild.yaml
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Task 6 : Define a pipeline using the KFP SDK
+
+1. Fill out the #TODO section to add and configure CustomContainerTrainingJobOp component defined in the cell above.
+
+USER = "qwiklabsdemo"
+
+
+2. TODO: fill in the remaining arguments from the pipeline constructor.
+
+display_name=display_name,
+    container_uri=container_uri,
+    model_serving_container_image_uri=model_serving_container_image_uri,
+    base_output_dir=GCS_BASE_OUTPUT_DIR,
+
+
+3. TODO: Generate online predictions using your Vertex Endpoint.
+
+endpoint = vertexai.Endpoint(
+endpoint_name=ENDPOINT_NAME,
+project=PROJECT_ID,
+location=REGION
+)
+
+
+
+4. TODO: write a movie review to test your model e.g. "The Dark Knight is the best Batman movie!"
+
+test_review = "The Dark Knight is the best Batman movie!"
+
+
+
+5. TODO: use your Endpoint to return prediction for your test_review.
+
+prediction = endpoint.predict([test_review])
+
+
+********************************************************* Congratulation ******************************************************************************
